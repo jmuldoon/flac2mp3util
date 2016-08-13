@@ -2,6 +2,7 @@ package thirdpartysw
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/golang/glog"
 	"github.com/jmuldoon/flac2mp3util/util"
 	"io"
@@ -11,7 +12,8 @@ import (
 )
 
 const (
-	thirdpartyswpath = "./thirdpartysw"
+	thirdpartyswdir  = "./thirdpartysw"
+	sourceconfigname = "sources.json"
 	dependencyswpath = "./deps"
 )
 
@@ -44,8 +46,9 @@ func initDepsFolder() (err error) {
 	if err != nil {
 		return err
 	}
-	if err := os.Mkdir(abs, 0777); err != nil {
-		return err
+	// if it exists we ignore the error, by not creating the dir
+	if _, err := os.Stat(abs); os.IsNotExist(err) {
+		os.Mkdir(abs, 0777)
 	}
 	return nil
 }
@@ -55,12 +58,14 @@ func (tp *ThirdPartyType) Download() (err error) {
 	if err := initDepsFolder(); err != nil {
 		return err
 	}
-	// resp, err := tp.Client.Get(
-	// 	"https://sourceforge.net/projects/lame/files/latest/download?source=files")
-	// if err != nil {
-	// 	return err
-	// }
-	// defer resp.Body.Close()
+	for _, el := range tp.Dependencies {
+		resp, err := tp.Client.Get(el.URL)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+		fmt.Printf("%+v\n", resp.Body)
+	}
 	return nil
 }
 
@@ -90,7 +95,7 @@ func (tp *ThirdPartyType) read(path string) (err error) {
 // ReadURLs reads in the URLs from the sources.json file and stores them in the
 // receiver ThirdPartyType's field Dependencies.
 func (tp *ThirdPartyType) ReadURLs() (err error) {
-	absPath, err := util.AbsolutePathHelper(thirdpartyswpath, "sources.json")
+	absPath, err := util.AbsolutePathHelper(thirdpartyswdir, sourceconfigname)
 	glog.V(2).Infoln(absPath)
 	if err != nil {
 		return err
