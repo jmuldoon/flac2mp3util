@@ -12,9 +12,10 @@ import (
 )
 
 const (
-	thirdpartyswdir  = "./thirdpartysw"
-	sourceconfigname = "sources.json"
-	dependencyswpath = "./deps"
+	thirdpartyswdir  string = "./thirdpartysw"
+	sourceconfigname string = "sources.json"
+	dependencyswpath string = "./deps"
+	clienttimeout    int    = 300
 )
 
 type ThirdPartyer interface {
@@ -35,7 +36,9 @@ var thirdParty *ThirdPartyType
 
 func init() {
 	thirdParty = &ThirdPartyType{
-		Client: &http.Client{},
+		Client: &http.Client{
+			Timeout: time.Second * 300,
+		},
 	}
 }
 
