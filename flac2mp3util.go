@@ -1,5 +1,5 @@
 /*
-	$ go run xvert.go -stderrthreshold=Info -log_dir=./log -v=2 -src "test/dir"
+	$ go run flac2mp3util.go -stderrthreshold=Info -log_dir=./log -v=2 -src "test/dir"
 */
 
 package main
@@ -8,7 +8,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/golang/glog"
-	"github.com/jmuldoon/xvert/thirdpartysw"
+	"github.com/jmuldoon/flac2mp3util/thirdpartysw"
 	"os"
 )
 
@@ -30,7 +30,7 @@ type Arguments struct {
 // usage redefines the flag.Usage() function.
 func usage() {
 	usageStr := fmt.Sprintf(`usage: %s -stderrthreshold=[INFO|WARN|FATAL]
-		-log_dir=[string]`+"\n", os.Args[0])
+		-log_dir=[string] -src "/path/to/src"`+"\n", os.Args[0])
 	fmt.Fprintf(os.Stderr, usageStr)
 	glog.Errorln(usageStr)
 	flag.PrintDefaults()

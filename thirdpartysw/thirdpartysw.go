@@ -3,7 +3,7 @@ package thirdpartysw
 import (
 	"encoding/json"
 	"github.com/golang/glog"
-	"github.com/jmuldoon/xvert/util"
+	"github.com/jmuldoon/flac2mp3util/util"
 	"io"
 	"net/http"
 	"os"
@@ -26,7 +26,7 @@ type ThirdPartyType struct {
 }
 
 type Url struct {
-	URL string
+	URL string `json:"url"`
 }
 
 var thirdParty *ThirdPartyType
