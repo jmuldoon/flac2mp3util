@@ -1,6 +1,7 @@
 package thirdpartysw
 
 import (
+	"compress/gzip"
 	"encoding/json"
 	"fmt"
 	"github.com/golang/glog"
@@ -9,13 +10,14 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 const (
-	thirdpartyswdir  string = "./thirdpartysw"
-	sourceconfigname string = "sources.json"
-	dependencyswpath string = "./deps"
-	clienttimeout    int    = 300
+	thirdpartyswdir  string        = "./thirdpartysw"
+	sourceconfigname string        = "sources.json"
+	dependencyswpath string        = "./deps"
+	clienttimeout    time.Duration = 300
 )
 
 type ThirdPartyer interface {
@@ -34,10 +36,12 @@ type Url struct {
 
 var thirdParty *ThirdPartyType
 
+// init sets up the client to be used for the http requests since the default
+// one is garbage due to not having a timeout.
 func init() {
 	thirdParty = &ThirdPartyType{
 		Client: &http.Client{
-			Timeout: time.Second * 300,
+			Timeout: time.Second * clienttimeout,
 		},
 	}
 }
@@ -62,12 +66,29 @@ func (tp *ThirdPartyType) Download() (err error) {
 		return err
 	}
 	for _, el := range tp.Dependencies {
-		resp, err := tp.Client.Get(el.URL)
+		req, err := http.NewRequest("GET", el.URL, nil)
+		if err != nil {
+			return err
+		}
+		req.Header.Add("Accept-Encoding", "gzip")
+
+		resp, err := tp.Client.Do(req)
 		if err != nil {
 			return err
 		}
 		defer resp.Body.Close()
-		fmt.Printf("%+v\n", resp.Body)
+
+		var reader io.ReadCloser
+		switch resp.Header.Get("Content-Encoding") {
+		case "gzip":
+			reader, err = gzip.NewReader(resp.Body)
+			if err != nil {
+				return err
+			}
+			defer reader.Close()
+		default:
+			return fmt.Errorf("Download: failed due to incorrect header response")
+		}
 	}
 	return nil
 }
