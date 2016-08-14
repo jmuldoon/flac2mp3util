@@ -74,6 +74,7 @@ func main() {
 	args.assertArgumentsValid()
 
 	thirdpartyer := thirdpartysw.ThirdPartyer(&thirdpartysw.ThirdPartyType{})
+	thirdpartyer.InitializeClient() // additional setup for the default client
 	if err := thirdpartyer.ReadURLs(); err != nil {
 		glog.Errorf("error in %+v . Exited with: %d", err, ERR_THIRDPARTYSWDEP)
 	}
