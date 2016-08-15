@@ -59,25 +59,13 @@ func verifyContentIsCompressed(resp *http.Response) (err error) {
 	}
 }
 
-// ungzip decompresses the specified source to the target destination directory.
-// if it doesn't exist, it will be created.
-func ungzip(source *gzip.Reader, target string) error {
-	target = filepath.Join(target, source.Name)
-	writer, err := os.Create(target)
-	if err != nil {
-		return err
-	}
-	defer writer.Close()
-
-	_, err = io.Copy(writer, source)
-	return err
-}
-
 // Download retrieves the tarballs from the url list given as a parameter.
 func (tp *ThirdPartyType) Download() (err error) {
 	if err := util.MakeDirectory(dependencyswpath); err != nil {
 		return err
 	}
+	gzipper := util.Gzipper(&util.GzipType{})
+
 	for _, el := range tp.Dependencies {
 		// setup request string and headers
 		req, err := http.NewRequest("GET", el.URL, nil)
@@ -108,10 +96,26 @@ func (tp *ThirdPartyType) Download() (err error) {
 		defer gzipReader.Close()
 
 		// todo: likely needs to be untar instead, which may be a bit more work.
-		if err := ungzip(gzipReader,
+		// if err := util.ungzip(gzipReader,
+		// 	filepath.Join(dependencyswpath, el.Name)); err != nil {
+		// 	return err
+		// }
+		// TODO: this section is just broken at this point. The creation of the file
+		// works, but creates ti with byte information just sitting in it. probably
+		// improperly managed.
+		if err := gzipper.Create(
 			filepath.Join(dependencyswpath, el.Name)); err != nil {
 			return err
 		}
+		gzipper.Close()
+		if err := gzipper.Write(gzipReader); err != nil {
+			return err
+		}
+		// if err := gzipper.Decompress(gzipReader,
+		// 	filepath.Join(dependencyswpath, el.Name)); err != nil {
+		// 	return err
+		// }
+
 	}
 	return nil
 }
