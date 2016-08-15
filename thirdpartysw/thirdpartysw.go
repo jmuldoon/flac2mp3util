@@ -1,6 +1,7 @@
 package thirdpartysw
 
 import (
+	// "archive/tar"
 	"compress/gzip"
 	"encoding/json"
 	"fmt"
@@ -32,7 +33,8 @@ type ThirdPartyType struct {
 }
 
 type Url struct {
-	URL string `json:"url"`
+	Name string `json:"name"`
+	URL  string `json:"url"`
 }
 
 // InitializeClient sets up the client to be used for the http requests since the default
@@ -106,12 +108,10 @@ func (tp *ThirdPartyType) Download() (err error) {
 		defer gzipReader.Close()
 
 		// todo: likely needs to be untar instead, which may be a bit more work.
-		// either way, figure that out and ensure that the string placeholde "lame"
-		// is dynamic. will need to update the struct for that though as well.
-		if err := ungzip(gzipReader, filepath.Join(dependencyswpath, "Lame")); err != nil {
+		if err := ungzip(gzipReader,
+			filepath.Join(dependencyswpath, el.Name)); err != nil {
 			return err
 		}
-
 	}
 	return nil
 }

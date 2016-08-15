@@ -1,5 +1,7 @@
 [{
+  "name": "lame",
   "url": "https://sourceforge.net/projects/lame/files/latest/download?source=files"
 }, {
+  "name": "id3v2",
   "url": "https://sourceforge.net/projects/id3v2/files/latest/download?source=files"
 }]
